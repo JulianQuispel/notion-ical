@@ -4,16 +4,19 @@ import {Client, isFullPage} from '@notionhq/client';
 import {RichTextItemResponse} from '@notionhq/client/build/src/api-endpoints';
 import ical from 'ical-generator';
 import {add, isValid} from 'date-fns';
+import {Task} from './types';
 
 dotenv.config();
 
 const app: Express = express();
 const notion = new Client({auth: process.env.NOTION_KEY});
 const port = process.env.PORT || 3000;
-const databaseId = process.env.NOTION_DATABASE_ID as string;
+const databaseId = process.env.NOTION_DATABASE_ID!;
 
 app.get('/', async (req: Request, res: Response) => {
-  getTasksFromDatabase().then(cal => cal.serve(res));
+  const tasks = await getTasksFromDatabase();
+  const cal = getCalendar('Notion tasks', tasks);
+  cal.serve(res);
 });
 
 app.listen(port, () => {
@@ -36,7 +39,8 @@ async function getTasksFromDatabase() {
     pages.push(...results);
   } while (hasMore);
 
-  const cal = ical({name: 'Notion tasks'});
+  const tasks: Task[] = [];
+
   for (const page of pages) {
     if (!isFullPage(page)) continue;
 
@@ -52,24 +56,42 @@ async function getTasksFromDatabase() {
       date: any;
       id: string;
     };
-    const startDate = date.date['start'] as string;
-    const allDay = !startDate.includes('T');
-    let endDate = new Date(date.date['end']);
+    const allDay = isAllDay(date.date['start']);
+    const startDate = new Date(date.date['start']);
+    const endDate = getEndDate(date.date['end'], date.date['start'], allDay);
 
-    if (!isValid(endDate))
-      endDate = add(new Date(startDate), {
-        hours: 1,
-      });
-
-    if (allDay) endDate = add(endDate, {days: 1});
-
-    cal.createEvent({
-      summary: title,
-      start: new Date(startDate),
-      end: new Date(endDate),
-      allDay,
-    });
+    tasks.push({title, startDate, endDate, allDay});
   }
 
+  return tasks;
+}
+
+function getCalendar(name: string, tasks: Task[]) {
+  const cal = ical({name});
+
+  tasks.forEach(({title, startDate, endDate, allDay}) => {
+    cal.createEvent({
+      summary: title,
+      start: startDate,
+      end: endDate,
+      allDay,
+    });
+  });
+
   return cal;
+}
+
+const isAllDay = (startDate: string) => !startDate.includes('T');
+
+function getEndDate(
+  endDate: string | null,
+  startDate: string,
+  allDay: boolean
+) {
+  if (endDate && isValid(new Date(endDate))) return new Date(endDate);
+
+  return add(new Date(startDate), {
+    hours: 1,
+    days: allDay ? 1 : 0,
+  });
 }
