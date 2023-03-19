@@ -9,7 +9,7 @@
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
     "lint": "gts lint",
     "clean": "gts clean",
-    "compile": "tsc",
+    "compile": "npx tsc",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",

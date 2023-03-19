@@ -21,7 +21,7 @@ app.listen(port, () => {
 });
 
 async function getTasksFromDatabase() {
-  const pages = [];
+  const pages: any[] = [];
   let cursor: any = undefined;
   const hasMore = false;
 
@@ -39,8 +39,6 @@ async function getTasksFromDatabase() {
   const cal = ical({name: 'Notion tasks'});
   for (const page of pages) {
     if (!isFullPage(page)) continue;
-
-    const pageId = page.id;
 
     const title = (
       page.properties['Name'] as {
