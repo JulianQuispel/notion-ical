@@ -1,12 +1,23 @@
-FROM node:16-alpine as build-target
+FROM node:20-alpine as base
+COPY . /app
+WORKDIR /app
+
+FROM base as prod-deps
+RUN npm ci --omit=dev --ignore-scripts
+
+FROM base AS build
+RUN npm ci --ignore-scripts
+
+RUN npm run build
+
+FROM node:20-alpine as production
+
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/dist /app/dist
+
+WORKDIR /app
 
 EXPOSE 3000
 
-WORKDIR /app
-COPY . /app
-
-RUN npm ci
-RUN npm run build
-RUN npm prune --production
-
-CMD ["node", "dist/index.js"]
+CMD [ "dist/index.js" ]
