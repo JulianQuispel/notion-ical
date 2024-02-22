@@ -1,7 +1,11 @@
 import express, {Express, Request, Response} from 'express';
 import dotenv from 'dotenv';
 import {Client, isFullPage} from '@notionhq/client';
-import {RichTextItemResponse} from '@notionhq/client/build/src/api-endpoints';
+import {
+  PageObjectResponse,
+  PartialPageObjectResponse,
+  RichTextItemResponse,
+} from '@notionhq/client/build/src/api-endpoints';
 import ical from 'ical-generator';
 import {add, isValid} from 'date-fns';
 import {Task} from './types';
@@ -20,13 +24,13 @@ app.get('/', async (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`[server]: Server is running at port ${port}`);
 });
 
 async function getTasksFromDatabase() {
-  const pages: any[] = [];
-  let cursor: any = undefined;
-  const hasMore = false;
+  const pages: (PageObjectResponse | PartialPageObjectResponse)[] = [];
+  let cursor: string | undefined = undefined;
+  let hasMore = false;
 
   do {
     const {results, next_cursor} = await notion.databases.query({
@@ -34,9 +38,11 @@ async function getTasksFromDatabase() {
       start_cursor: cursor,
     });
 
-    cursor = next_cursor;
+    cursor = next_cursor === null ? undefined : next_cursor;
 
     pages.push(...results);
+
+    hasMore = results.length > 0;
   } while (hasMore);
 
   const tasks: Task[] = [];
@@ -51,11 +57,11 @@ async function getTasksFromDatabase() {
         id: string;
       }
     ).title[0].plain_text;
-    const date = page.properties['Date'] as {
-      type: 'date';
-      date: any;
-      id: string;
-    };
+
+    const date = page.properties['Date'];
+
+    if (date.type !== 'date' || date.date === null) continue;
+
     const allDay = isAllDay(date.date['start']);
     const startDate = new Date(date.date['start']);
     const endDate = getEndDate(date.date['end'], date.date['start'], allDay);
