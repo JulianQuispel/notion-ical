@@ -12,6 +12,24 @@ Example: https://www.notion.so/johndoe/**pirlf9eefci9sey4l1gh7hsm0ur4wv2n**?v=pi
 
 _The bold part in the URL is the database ID_
 
+### Configuration
+
+This application uses a config file named config.yml using YAML format to configure the Notion databases you want to turn into an iCal calendar.
+
+```yaml
+calendars:
+  tasks:
+    name: Tasks
+    database_id: 63138270427139784081265724046142
+    properties:
+      date: Date
+  workouts:
+    name: Workouts
+    database_id: 39804639019819613784449002869425
+    properties:
+      date: Date
+```
+
 ## Installation
 
 This application can be installed in two ways. The easiest way is probably using [Docker](#docker)
@@ -20,7 +38,7 @@ This application can be installed in two ways. The easiest way is probably using
 
 ```bash
 docker build -t notion-ical .
-docker run -d -p 3000:3000 -e NOTION_KEY=<notion API key> -e NOTION_DATABASE_ID=<notion database id> notion-ical
+docker run -d -p 3000:3000 -v "$(pwd)/config.yml":/app/config.yml:ro  -e NOTION_KEY=<notion API key> -e NOTION_DATABASE_ID=<notion database id> notion-ical
 ```
 
 ### NPM
@@ -29,7 +47,7 @@ If you rather not use Docker and have Node.js and NPM installed, you can install
 
 ```bash
 npm install # install dependencies
-npm run build # build the source
+npm run compile # compile the source
 npm run start # start the ical server
 ```
 
