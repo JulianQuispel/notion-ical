@@ -1,4 +1,4 @@
-import {parseConfig} from '../src/utils/config_parser';
+import {parseConfig} from '../utils/config_parser';
 
 const configNoProperties = `
 calendars:

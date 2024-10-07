@@ -1,0 +1,19 @@
+services:
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config.yml:/app/config.yml
+    ports:
+      - '3000:3000'
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - NOTION_KEY=secret_GJD3mlNH7ZpAvfwNvM2LS7UuYjqip0ILBb6b1UXD4nP # ${NOTION_KEY}
+
+  redis:
+    image: redis:alpine
+    ports:
+      - '6379:6379'

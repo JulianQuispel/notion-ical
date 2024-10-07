@@ -8,9 +8,9 @@ Before you can use this application you need to create an internal application w
 
 Besides a token you also need the ID of the Notion database you want in your calendar. You can find the ID in the last part of the database URL.
 
-Example: https://www.notion.so/johndoe/**pirlf9eefci9sey4l1gh7hsm0ur4wv2n**?v=pirlf9eefci9sey4l1gh7hsm0ur4wv2n&pvs=4
+Example: https://www.notion.so/johndoe[pirlf9eefci9sey4l1gh7hsm0ur4wv2n]
 
-_The bold part in the URL is the database ID_
+*The part in the URL between square brackets is the database ID*
 
 ### Configuration
 
@@ -38,7 +38,7 @@ This application can be installed in two ways. The easiest way is probably using
 
 ```bash
 docker build -t notion-ical .
-docker run -d -p 3000:3000 -v "$(pwd)/config.yml":/app/config.yml:ro  -e NOTION_KEY=<notion API key> -e NOTION_DATABASE_ID=<notion database id> notion-ical
+docker run -d -p 3000:3000 -v "$(pwd)/config.yml":/app/config.yml:ro -e NOTION_KEY=<notion API key> notion-ical
 ```
 
 ### NPM

@@ -1,5 +1,5 @@
 import formatISO from 'date-fns/formatISO';
-import {dateIncludesTime, getEndDate} from '../src/utils/date';
+import {dateIncludesTime, getEndDate} from '../utils/date';
 
 test('date including time returns true', () => {
   expect(dateIncludesTime('2024-01-01T01:00:00.000Z')).toBe(true);

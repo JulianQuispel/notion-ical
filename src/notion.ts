@@ -2,14 +2,14 @@ import {Client, isFullPage} from '@notionhq/client';
 import {
   PageObjectResponse,
   QueryDatabaseResponse,
-  RichTextItemResponse,
 } from '@notionhq/client/build/src/api-endpoints';
-import {Event} from './types';
-import {dateIncludesTime, getEndDate} from './utils/date';
 
-const notion = new Client({auth: process.env.NOTION_KEY});
+export const notion = new Client({auth: process.env.NOTION_KEY});
 
-export async function getItemsFromDatabase(databaseId: string) {
+export async function getItemsFromDatabase(
+  databaseId: string,
+  modifiedSince: Date
+) {
   const pages = [];
   let cursor: string | undefined = undefined;
   let hasMore = false;
@@ -19,6 +19,13 @@ export async function getItemsFromDatabase(databaseId: string) {
       await notion.databases.query({
         database_id: databaseId,
         start_cursor: cursor,
+        filter: {
+          last_edited_time: {
+            after: modifiedSince.toISOString(),
+          },
+          timestamp: 'last_edited_time',
+          type: 'last_edited_time',
+        },
       });
 
     cursor = next_cursor === null ? undefined : next_cursor;
@@ -46,33 +53,4 @@ export function getDateFromProperty(
     return property.formula.date;
 
   return null;
-}
-
-export function convertItemsToEvents(
-  items: PageObjectResponse[],
-  datePropertyName = 'Date'
-) {
-  const tasks: Event[] = [];
-
-  for (const item of items) {
-    const title = (
-      item.properties['Name'] as {
-        type: 'title';
-        title: Array<RichTextItemResponse>;
-        id: string;
-      }
-    ).title[0].plain_text;
-
-    const date = getDateFromProperty(item.properties[datePropertyName]);
-
-    if (!date) continue;
-
-    const allDay = !dateIncludesTime(date['start']);
-    const startDate = new Date(date['start']);
-    const endDate = getEndDate(date['end'], date['start'], allDay);
-
-    tasks.push({title, startDate, endDate, allDay});
-  }
-
-  return tasks;
 }

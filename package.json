@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node build/index.js",
     "dev": "concurrently \"tsc --watch\" \"nodemon -q build/index.js\"",
-    "test": "jest test/ --coverage",
+    "test": "jest src --coverage",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc -build tsconfig.build.json",
@@ -25,6 +25,7 @@
     "express": "^4.18.2",
     "ical-generator": "^3.6.1",
     "pino": "^8.19.0",
+    "redis": "^4.7.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
